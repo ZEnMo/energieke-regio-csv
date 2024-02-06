@@ -1,5 +1,8 @@
+import java.lang.System.getenv
+
 plugins {
     id("java")
+    id("edu.sc.seis.launch4j") version "3.0.5"
 }
 
 group = "com.zenmo"
@@ -20,6 +23,18 @@ dependencies {
     implementation(platform("com.squareup.okhttp3:okhttp-bom:4.12.0"))
     implementation("com.squareup.okhttp3:okhttp")
     implementation("com.squareup.okhttp3:logging-interceptor")
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+launch4j {
+    mainClassName = "com.zenmo.Main"
+    headerType = "console"
+    cmdLine = getenv("ENERGIEKE_REGIO_API_KEY")
 }
 
 tasks.test {

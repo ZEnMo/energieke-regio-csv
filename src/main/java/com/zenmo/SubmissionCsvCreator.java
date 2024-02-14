@@ -52,15 +52,18 @@ public class SubmissionCsvCreator {
                     .build();
             var response2 = httpClient.newCall(otherRequest).execute();
 
-            response2.body().byteStream().transferTo(new FileOutputStream(
+            var fileName =
                     jsonObject.getString("Project")
-                            + " - " +
-                            result.get("Organisatie.Naam")
-                            + " - " +
-                            bestandObject.getString("Omschrijving")
-                            + " - " +
-                            bestandObject.getString("Naam")
-            ));
+                    + " - " +
+                    result.get("Organisatie.Naam")
+                    + " - " +
+                    bestandObject.getString("Omschrijving")
+                    + " - " +
+                    bestandObject.getString("Naam");
+
+            fileName = fileName.replaceAll("[*\"<>:|/\\?]", "_");
+
+            response2.body().byteStream().transferTo(new FileOutputStream(fileName));
         }
 
         return result;

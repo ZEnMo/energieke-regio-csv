@@ -10,6 +10,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
@@ -31,7 +33,7 @@ public class Main {
                 .header("Accept", "application/json")
                 .build();
 
-        ArrayList<Map<String, String>> result = new ArrayList<Map<String, String>>();
+        List<Map<String, String>> result = new ArrayList<Map<String, String>>();
 
         try {
             HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
@@ -45,6 +47,20 @@ public class Main {
 
             JsonReader jsonReader = Json.createReader(new StringReader(response.body().string()));
             var submissions = jsonReader.readArray();
+
+//            result = submissions.parallelStream().map(submission -> {
+//                var objSubmission = (JsonObject) submission;
+//                var link = objSubmission.getString("Link");
+//                Map<String, String> record = null;
+//                try {
+//                    record = submissionWalker.getSubmission(link);
+//                } catch (IOException | InterruptedException e) {
+//                    throw new RuntimeException(e);
+//                }
+//
+//                return record;
+//            }).collect(Collectors.toList());
+
             for (var submission: submissions) {
                 var objSubmission = (JsonObject) submission;
                 var link = objSubmission.getString("Link");
@@ -54,7 +70,8 @@ public class Main {
 
         } catch (IOException e) {
             throw new RuntimeException(e);
-        } catch (InterruptedException e) {
+        }
+        catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
 
@@ -81,7 +98,7 @@ public class Main {
         System.out.println("done");
     }
 
-    public static Set<String> allKeys(ArrayList<Map<String, String>> allData) {
+    public static Set<String> allKeys(List<Map<String, String>> allData) {
         Set<String> allKeys = new LinkedHashSet<String>();
         for (Map<String, String> data : allData) {
             allKeys.addAll(data.keySet());

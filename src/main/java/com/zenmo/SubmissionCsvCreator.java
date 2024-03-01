@@ -3,6 +3,8 @@ package com.zenmo;
 import javax.json.Json;
 import javax.json.JsonObject;
 import java.io.*;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Map;
 
 import okhttp3.OkHttpClient;
@@ -35,6 +37,10 @@ public class SubmissionCsvCreator {
 
         var result = flattenJson(jsonObject);
 
+        if (!result.containsKey("Bestanden.0.Link")) {
+            return result;
+        }
+
         var csvLink = result.get("Bestanden.0.Link").replace("/zenmo", "/zenmo/");
         appendCsvContent(csvLink, result);
 
@@ -63,7 +69,9 @@ public class SubmissionCsvCreator {
 
             fileName = fileName.replaceAll("[*\"<>:|/\\?]", "_");
 
-            response2.body().byteStream().transferTo(new FileOutputStream(fileName));
+            if (!new File(fileName).isFile()) {
+                response2.body().byteStream().transferTo(new FileOutputStream(fileName));
+            }
         }
 
         return result;
@@ -77,26 +85,12 @@ public class SubmissionCsvCreator {
                 .build();
 
         var response = httpClient.newCall(csvRequest).execute();
-
-        Iterable<CSVRecord> records = CSVFormat.DEFAULT.builder().setHeader()
-                .setSkipHeaderRecord(true)
-                .setDelimiter(';')
-                .setAllowMissingColumnNames(true) // headers are missing for the last columns
-                .build()
-                .parse(new InputStreamReader(response.body().byteStream()));
-
-        var i = 0;
-        for (CSVRecord record : records) {
-            map.putAll(record.toMap());
-            i++;
+        var responseBody = response.body();
+        if (responseBody == null) {
+            throw new RuntimeException("No response body");
         }
 
-        if (i == 0) {
-            throw new RuntimeException("No rows");
-        }
-
-        if (i > 1) {
-            throw new RuntimeException("More than 1 row");
-        }
+        var parsed = CsvParser.parseCsv(responseBody.string());
+        map.putAll(parsed);
     }
 }

@@ -2,6 +2,7 @@ import java.lang.System.getenv
 
 plugins {
     id("java")
+    id("application") // adds the 'run' task
     id("edu.sc.seis.launch4j") version "3.0.5"
 }
 
@@ -28,6 +29,10 @@ dependencies {
 java {
     sourceCompatibility = JavaVersion.VERSION_21
     targetCompatibility = JavaVersion.VERSION_21
+}
+
+application {
+    mainClass = "com.zenmo.Main"
 }
 
 launch4j {
